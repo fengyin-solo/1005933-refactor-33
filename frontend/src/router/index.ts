@@ -17,6 +17,7 @@ const Irradiance = () => import('@/views/irradiance/index.vue')
 const Tooling = () => import('@/views/tooling/index.vue')
 const Fire = () => import('@/views/fire/index.vue')
 const Settlement = () => import('@/views/settlement/index.vue')
+const MonthlySettlement = () => import('@/views/monthly/index.vue')
 const Contract = () => import('@/views/contract/index.vue')
 const Crew = () => import('@/views/crew/index.vue')
 
@@ -40,6 +41,7 @@ const router = createRouter({
     { path: '/tooling', name: 'tooling', component: Tooling },
     { path: '/fire', name: 'fire', component: Fire },
     { path: '/settlement', name: 'settlement', component: Settlement },
+    { path: '/settlement-monthly', name: 'settlement-monthly', component: MonthlySettlement },
     { path: '/contract', name: 'contract', component: Contract },
     { path: '/crew', name: 'crew', component: Crew },
   ],
