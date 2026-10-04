@@ -1,3 +1,4 @@
+import { reconcileDomain } from '@/domain/settlement'
 import { SEED_ROWS } from './seed'
 import type { EntryRow } from './types'
 
@@ -8,22 +9,33 @@ function clone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T
 }
 
+function persist(data: Record<string, EntryRow[]>): void {
+  if (typeof window !== 'undefined' && window.localStorage) {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+  }
+}
+
 function readStorage(): Record<string, EntryRow[]> {
   const fallback = clone(SEED_ROWS)
   if (typeof window === 'undefined' || !window.localStorage) {
-    return fallback
+    return reconcileDomain(fallback).data
   }
   const raw = window.localStorage.getItem(STORAGE_KEY)
   if (!raw) {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(fallback))
-    return fallback
+    const seeded = reconcileDomain(fallback)
+    persist(seeded.data)
+    return seeded.data
   }
   try {
     const parsed = JSON.parse(raw) as Record<string, EntryRow[]>
-    return { ...fallback, ...parsed }
+    // 存量单据迁移：已开票留档锁定、未开票按新归属规则回填、已确认计量同步待核算。
+    const reconciled = reconcileDomain({ ...fallback, ...parsed })
+    if (reconciled.changed) persist(reconciled.data)
+    return reconciled.data
   } catch {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(fallback))
-    return fallback
+    const seeded = reconcileDomain(fallback)
+    persist(seeded.data)
+    return seeded.data
   }
 }
 

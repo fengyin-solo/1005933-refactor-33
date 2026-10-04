@@ -37,6 +37,7 @@
       <thead>
         <tr>
           <th v-for="column in columns" :key="column">{{ column }}</th>
+          <th>归属月份</th>
           <th>当前状态</th>
           <th>可执行动作</th>
         </tr>
@@ -44,6 +45,7 @@
       <tbody>
         <tr v-for="row in rows" :key="String(row.id)">
           <td v-for="column in columns" :key="column">{{ row[column] ?? '—' }}</td>
+          <td>{{ meterMonth(row) }}</td>
           <td>{{ row.status }}</td>
           <td class="row-actions">
             <button
@@ -58,7 +60,7 @@
           </td>
         </tr>
         <tr v-if="!rows.length">
-          <td :colspan="columns.length + 2" class="empty-state">暂无电量计量数据，可先登记关口计量表</td>
+          <td :colspan="columns.length + 3" class="empty-state">暂无电量计量数据，可先登记关口计量表</td>
         </tr>
       </tbody>
     </table>
@@ -79,12 +81,18 @@ import {
   moduleMeta,
   runAction as applyAction,
 } from '@/api/local-service'
+import { formatMonthKey, monthKeyFromDateText } from '@/domain/period'
 import type { EntryRow } from '@/data/types'
 
 const meta = moduleMeta('meter')
 const columns = ["计量点编号", "计量方向", "表计型号", "倍率", "抄表日期", "本期读数", "上期读数", "计量状态"]
 const actions = ["录入读数", "提交复核", "确认计量"]
 const statuses = ["待抄表", "已抄录", "待复核", "已确认"]
+
+function meterMonth(row: EntryRow): string {
+  const key = monthKeyFromDateText(String(row['抄表日期'] ?? ''))
+  return key ? `${formatMonthKey(key)}（${key}）` : '—'
+}
 const stats = [{"label": "计量点总数", "value": 0}, {"label": "待抄表计量点", "value": 0}, {"label": "待复核读数", "value": 0}]
 
 const rows = ref<EntryRow[]>([])
